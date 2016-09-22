@@ -33,76 +33,55 @@ window.findNRooksSolution = function(n) {
 };
 
 // return the number of nxn chessboards that exist, with n rooks placed such that none of them can attack each other
-window.countNRooksSolutions = function(n) {
-  var countNRooks = function (n, board, numRooks, row, col) {
-    //solutions counter
-    var solutions = 0;
-    var pastPosition = [];
-    //make an empty nxn board or use existing board
-    var boardy = board || new Board({n: n});
-    var addedRook = false;
-    row = row || 0;
-    col = col || 0;
-    numRooks = numRooks || 0;
-    //rows, column indices starting at 0, 0
-    //for loop for rows i            //base case, for loop runs to completion
-     //for loop for columns j
-        //place rook at i, j
-    for (var i = row; i < n; i++) {
-      for (var j = col; j < n; j++) {
-        boardy.togglePiece(i, j);
-        numRooks++;
-        addedRook = true;
-        //test if current placement is valid. If valid:
-        if (!boardy.hasRowConflictAt(i) && !boardy.hasColConflictAt(j)) {
-          //add return value of function call to countNRookSolutions with n, boardcopy, i, j+ 1 to solutions
-          pastPosition = [i, j];
-          var newI = i;
-          var newJ = j + 1;
-          if (newJ >= n) {
-            newI++;
-            newJ = 0;
-          }
-          if (newI < n && newJ < n && numRooks !== n) {
-            solutions += countNRooks(n, boardy, numRooks, newI, newJ);
-            boardy.togglePiece(pastPosition[0], pastPosition[1]);
-            numRooks--;
-            addedRook = false;
-          }
-        } else {
-          boardy.togglePiece(i, j);
-          numRooks--;
-          addedRook = false;
-        }
-      }
-      col = 0;
-      //debugger;
-    }
-    //if number of rooks is n
-    if (numRooks === n) {
-      //increment solutions by one
-      solutions++;
-      boardy.togglePiece(pastPosition[0], pastPosition[1]);
-      numRooks--;
-    } else if (addedRook) {
-      boardy.togglePiece(pastPosition[0], pastPosition[1]);
-      numRooks--;
-    }
+window.countNRooksSolutions = function(n, board, numRooks, row, invalidCol) {
+  //debugger
+  //solutions counter
+  if (n === numRooks) {
+    return 1;
+  }
+  var solutions = 0;
 
-    //toggle previously placed piece to leave board in same condition as was passed in;
-
+  row = row || 0;
+  
+  if (row >= n) { 
     return solutions;
-  };
-  // var masterBoard = new Board({n: n});
-  // var count = 0;
-  // for (var i = 0; i < n; i++) {
-  //   for (var j = 0; j < n; j++) {
-  //     count += countNRooks(n, masterBoard, 0, i, j);
-  //   }
-  // }
-  //    debugger;
+  }
+  
+  var pastPosition = [];
+  //make an empty nxn board or use existing board
+  var boardy = board || new Board({n: n});
+  // var addedRook = false;
+  invalidCol = invalidCol || {};
+  numRooks = numRooks || 0;
+  //rows, column indices starting at 0, 0
+  //for loop for rows i            //base case, for loop runs to completion
+   //for loop for columns j
+      //place rook at i, j
+  var i = row;
+  for (var j = 0; j < n; j++) {
+    if (invalidCol[j] || n === numRooks) {
+      continue;
+    }
+    boardy.togglePiece(i, j);
+    invalidCol[j] = true;
+    numRooks++;
+    // addedRook = true;
+    //test if current placement is valid. If valid:
+      //add return value of function call to countNRookSolutions with n, boardcopy, i, j+ 1 to solutions
+    pastPosition = [i, j];
+    var newI = i + 1;
+    var newJ = 0;
 
-  return countNRooks(n);
+    // if (numRooks !== n) {
+    solutions += countNRooksSolutions(n, boardy, numRooks, newI, invalidCol);
+    boardy.togglePiece(pastPosition[0], pastPosition[1]);
+    invalidCol[j] = false;
+    numRooks--;
+    // addedRook = false;
+    // }
+  }
+
+  return solutions;
 };
 
 // return a matrix (an array of arrays) representing a single nxn chessboard, with n queens placed such that none of them can attack each other
