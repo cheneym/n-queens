@@ -85,17 +85,123 @@ window.countNRooksSolutions = function(n, board, numRooks, row, invalidCol) {
 };
 
 // return a matrix (an array of arrays) representing a single nxn chessboard, with n queens placed such that none of them can attack each other
-window.findNQueensSolution = function(n) {
-  var solution = undefined; //fixme
+window.findNQueensSolution = function(n, board, numRooks, row, invalidCol, invalidMajor, invalidMinor, blanky) {
+   //debugger
+  //solutions counter
+  row = row || 0;
+  var boardy = board || new Board({n: n});
+  blanky = blanky || new Board({n: n});
 
-  console.log('Single solution for ' + n + ' queens:', JSON.stringify(solution));
-  return solution;
+  if (row >= n || n === 0) { 
+    return boardy.rows();
+  }
+  
+  var pastPosition = [];
+  //make an empty nxn board or use existing board
+  // var addedRook = false;
+  invalidCol = invalidCol || {};
+  invalidMinor = invalidMinor || {};
+  invalidMajor = invalidMajor || {};
+  numRooks = numRooks || 0;
+  //rows, column indices starting at 0, 0
+  //for loop for rows i            //base case, for loop runs to completion
+   //for loop for columns j
+      //place rook at i, j
+  var i = row;
+  for (var j = 0; j < n; j++) {
+    var firstMajor = boardy._getFirstRowColumnIndexForMajorDiagonalOn(i, j);
+    var firstMinor = boardy._getFirstRowColumnIndexForMinorDiagonalOn(i, j);
+    if (invalidCol[j] || n === numRooks || invalidMajor[firstMajor] || invalidMinor[firstMinor]) {
+      continue;
+    }
+    boardy.togglePiece(i, j);
+    invalidCol[j] = true;
+    numRooks++;
+    invalidMajor[firstMajor] = true;
+    invalidMinor[firstMinor] = true;
+    // addedRook = true;
+    //test if current placement is valid. If valid:
+      //add return value of function call to countNRookSolutions with n, boardcopy, i, j+ 1 to solutions
+    pastPosition = [i, j];
+    var newI = i + 1;
+    var newJ = 0;
+
+    // if (numRooks !== n) {
+    var solution = findNQueensSolution(n, boardy, numRooks, newI, invalidCol, invalidMajor, invalidMinor, blanky);
+    //if (solution !== blanky) {
+    //  return solution;
+    //}
+    if (solution) {
+      return solution;
+    }
+    boardy.togglePiece(pastPosition[0], pastPosition[1]);
+    invalidCol[j] = false;
+    invalidMajor[firstMajor] = false;
+    invalidMinor[firstMinor] = false;
+    numRooks--;
+    // addedRook = false;
+  }
+  
+  if (i === 0) {
+    return blanky.rows();
+  }
 };
 
 // return the number of nxn chessboards that exist, with n queens placed such that none of them can attack each other
-window.countNQueensSolutions = function(n) {
-  var solutionCount = undefined; //fixme
+window.countNQueensSolutions = function(n, board, numRooks, row, invalidCol, invalidMajor, invalidMinor) {
+  //debugger
+  //solutions counter
+  if (n === numRooks || n === 0) {
+    return 1;
+  }
+  var solutions = 0;
 
-  console.log('Number of solutions for ' + n + ' queens:', solutionCount);
-  return solutionCount;
+  row = row || 0;
+  
+  if (row >= n) { 
+    return solutions;
+  }
+  
+  var pastPosition = [];
+  //make an empty nxn board or use existing board
+  var boardy = board || new Board({n: n});
+  // var addedRook = false;
+  invalidCol = invalidCol || {};
+  invalidMinor = invalidMinor || {};
+  invalidMajor = invalidMajor || {};
+  numRooks = numRooks || 0;
+  //rows, column indices starting at 0, 0
+  //for loop for rows i            //base case, for loop runs to completion
+   //for loop for columns j
+      //place rook at i, j
+  var i = row;
+  for (var j = 0; j < n; j++) {
+    var firstMajor = boardy._getFirstRowColumnIndexForMajorDiagonalOn(i, j);
+    var firstMinor = boardy._getFirstRowColumnIndexForMinorDiagonalOn(i, j);
+    if (invalidCol[j] || n === numRooks || invalidMajor[firstMajor] || invalidMinor[firstMinor]) {
+      continue;
+    }
+    boardy.togglePiece(i, j);
+    invalidCol[j] = true;
+    numRooks++;
+    invalidMajor[firstMajor] = true;
+    invalidMinor[firstMinor] = true;
+    // addedRook = true;
+    //test if current placement is valid. If valid:
+      //add return value of function call to countNRookSolutions with n, boardcopy, i, j+ 1 to solutions
+    pastPosition = [i, j];
+    var newI = i + 1;
+    var newJ = 0;
+
+    // if (numRooks !== n) {
+    solutions += countNQueensSolutions(n, boardy, numRooks, newI, invalidCol, invalidMajor, invalidMinor);
+    boardy.togglePiece(pastPosition[0], pastPosition[1]);
+    invalidCol[j] = false;
+    invalidMajor[firstMajor] = false;
+    invalidMinor[firstMinor] = false;
+    numRooks--;
+    // addedRook = false;
+  }
+
+  return solutions;
 };
