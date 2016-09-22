@@ -141,7 +141,7 @@ window.findNQueensSolution = function(n, board, numRooks, row, invalidCol, inval
     numRooks--;
     // addedRook = false;
   }
-  
+
   if (i === 0) {
     return blanky.rows();
   }
@@ -149,59 +149,62 @@ window.findNQueensSolution = function(n, board, numRooks, row, invalidCol, inval
 
 // return the number of nxn chessboards that exist, with n queens placed such that none of them can attack each other
 window.countNQueensSolutions = function(n, board, numRooks, row, invalidCol, invalidMajor, invalidMinor) {
-  //debugger
-  //solutions counter
+  //if our current number of rooks is equal to our board size return a complete solution (1)
   if (n === numRooks || n === 0) {
     return 1;
   }
+  //initialize our total amount of queen solutions
   var solutions = 0;
-
+  //if we have a row passed in start there or start at the first row
   row = row || 0;
   
+  //if our current row is just as large as our board size
   if (row >= n) { 
     return solutions;
   }
   
+  //keeps track of the last held queen location
   var pastPosition = [];
   //make an empty nxn board or use existing board
   var boardy = board || new Board({n: n});
-  // var addedRook = false;
+  //create our test cases that let us know if a spot can hold a queen or not
   invalidCol = invalidCol || {};
   invalidMinor = invalidMinor || {};
   invalidMajor = invalidMajor || {};
   numRooks = numRooks || 0;
   //rows, column indices starting at 0, 0
-  //for loop for rows i            //base case, for loop runs to completion
-   //for loop for columns j
-      //place rook at i, j
   var i = row;
   for (var j = 0; j < n; j++) {
+    //check if the a queen is line the line of attack for the queen we are placing
     var firstMajor = boardy._getFirstRowColumnIndexForMajorDiagonalOn(i, j);
     var firstMinor = boardy._getFirstRowColumnIndexForMinorDiagonalOn(i, j);
     if (invalidCol[j] || n === numRooks || invalidMajor[firstMajor] || invalidMinor[firstMinor]) {
       continue;
     }
+    //if there is no line of attack
+    //addthe queen
     boardy.togglePiece(i, j);
+    //set the current queens line of sight on the board for its column,row, and diagonal
     invalidCol[j] = true;
     numRooks++;
     invalidMajor[firstMajor] = true;
     invalidMinor[firstMinor] = true;
-    // addedRook = true;
-    //test if current placement is valid. If valid:
-      //add return value of function call to countNRookSolutions with n, boardcopy, i, j+ 1 to solutions
+    //keep track of placed queen indices
     pastPosition = [i, j];
+    //go to the next row and start at the beginning of it
     var newI = i + 1;
     var newJ = 0;
 
-    // if (numRooks !== n) {
+    //extract all solutions for current board configuration
     solutions += countNQueensSolutions(n, boardy, numRooks, newI, invalidCol, invalidMajor, invalidMinor);
+    //remove last placed piece
     boardy.togglePiece(pastPosition[0], pastPosition[1]);
+    //remove our queens line of sight
     invalidCol[j] = false;
     invalidMajor[firstMajor] = false;
     invalidMinor[firstMinor] = false;
     numRooks--;
-    // addedRook = false;
   }
-
+  //past extracted solutions to parent
   return solutions;
 };
